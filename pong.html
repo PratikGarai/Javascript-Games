@@ -1,0 +1,136 @@
+<canvas id="slither" width="576" height="576"></canvas>
+<script>
+    window.onload=function(){
+            canvas=document.getElementById("slither");
+            ctx=canvas.getContext("2d");
+            document.addEventListener("keydown",keyPush);
+            gameInterval = setInterval(game,1000/13);
+    }
+
+    /*
+   pp -> paddle position
+   pv -> paddle velocity
+   bp -> ball position
+   bvx,bvy -> x and y velocities of ball
+   */
+
+    pp = 9;
+    pv = 0;
+    gs=tc=24
+    bv = [1,[-1,1][Math.floor(Math.random()*2)]];
+    bp = [12,12];
+    gameOver = gameStarted = false;
+    score = 0;
+
+    function game() {
+
+            ctx.fillStyle="black";
+            ctx.fillRect(0,0,canvas.width,canvas.height);
+
+            if(!gameStarted){
+                    ctx.fillStyle="black";
+                    ctx.fillRect(0,0,canvas.width,canvas.height);
+
+                    ctx.font = "50px Arial";
+                    ctx.textAlign = "center";
+                    ctx.fillStyle = "white";
+                    ctx.fillText(`PONG`,canvas.width/2,canvas.height/2-10);
+                    ctx.font = "20px Arial";
+                    ctx.fillText(`press enter to begin`,canvas.width/2,canvas.height/2+40);
+            }
+
+            else if(gameOver){
+                    ctx.font = "50px Arial";
+                    ctx.textAlign = "center";
+                    ctx.fillStyle = "white";
+                    ctx.fillText(`Game Over`,canvas.width/2,canvas.height/2-10);
+                    ctx.fillStyle = "white";
+                    ctx.fillText(`Score: ${score}`, canvas.width/2,(canvas.height/2)+40);
+                    ctx.font = "20px Arial";
+                    ctx.fillText(`Press enter to go again`, canvas.width/2,(canvas.height/2)+70);
+                    pp = 9;
+                    pv = 0;
+                    bv = [1,[-1,1][Math.floor(Math.random()*2)]];
+                    bp = [12,12];
+            }
+
+            else{
+                    ctx.fillStyle = "white";
+                    ctx.font = "25px Arial";
+                    ctx.textAlign = "center";
+                    ctx.fillText(`Score: ${score}`, canvas.width/2, 25);
+
+                    ctx.fillStyle="white";
+                    ctx.fillRect(0,pp*gs,gs,5*gs);
+
+                    ctx.fillRect(gs*(gs-1),((bp[1]-2)<=tc-5?(bp[1]-2>=0?bp[1]-2:0):tc-5)*gs,gs,5*gs);
+
+                    ctx.fillRect(bp[0]*gs,bp[1]*gs,gs,gs);
+
+                    pp+=pv;
+                    if(pp<0) pp=0;
+                    if(pp>tc-5) pp=tc-5;
+
+                    bp[0] += bv[0];
+                    bp[1] += bv[1];
+
+                    if(bp[1]==tc){
+                            bounce("y");
+                    }
+
+                    if(bp[1]==0){
+                            bounce("y");
+                    }
+
+                    if(bp[0]==tc-1){
+                            bounce("x");
+                    }
+
+                    if(bp[0]==1 && bv[0]<0 && bp[1]>=pp-1 && bp[1]<=pp+6) {
+                            score += 100;
+                            bounce("x");
+                    }
+
+                    if(bp[0]<0){
+                            gameOver = true;
+                    }
+
+                    <!-- if(score>1000){ -->
+                    <!--     bv[0] = bv[0]*(1+Math.floor(score/1000)); -->
+                    <!--     bv[1] = bv[1]*(1+Math.floor(score/1000)); -->
+                    <!-- } -->
+
+            }
+    }
+
+    function bounce(direction){
+            if(direction=="x"){
+                bv[0] = -bv[0];
+            }
+            else if(direction=="y"){
+                bv[1] = -bv[1];
+            }
+    }
+
+    function keyPush(evt) {
+            switch(evt.keyCode) {
+                /* 37->Left; 38-> Up; 39-> Right; 40->Down */
+                case 38:
+                    pv=-1;
+                    break;
+                case 40:
+                    pv=1;
+                    break;
+                default:
+                    if(gameOver){
+                        gameOver = false;
+                        score = 0;
+                    }
+                    if(!gameStarted){
+                        gameStarted = true;
+                    }
+                    break;
+        }
+    }
+
+</script>
