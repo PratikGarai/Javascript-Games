@@ -14,6 +14,8 @@ var Snake = {
     head_y : undefined,
     body : undefined,
     direction : 1,
+    food_x : undefined, 
+    food_y : undefined
 } 
 
 var direction_mapper = {
@@ -21,6 +23,11 @@ var direction_mapper = {
     2 : [1, 0],         // right
     3 : [0, 1],         // down
     4 : [-1, 0]         // left
+}
+
+const generateFood = () => {
+    Snake.food_x = Math.floor(Math.random()*rows);
+    Snake.food_y = Math.floor(Math.random()*cols);
 }
 
 const start = () => {
@@ -31,6 +38,8 @@ const start = () => {
 }
 
 const init = () => {
+    generateFood();
+
     canvasContext
         .clearRect(
             0,
@@ -48,14 +57,20 @@ const init = () => {
             canvas.height
         );
     
-        Snake.head_x = 20;
-        Snake.head_y = 20;
-        Snake.body = [];
+    Snake.head_x = 20;
+    Snake.head_y = 20;
+    Snake.body = [];
+    
+    drawPixel(col2, Snake.head_x,Snake.head_y);
+    drawPixel(col3, Snake.food_x,Snake.food_y);
     
     setTimeout(()=> console.log("Started"), 1000);
 }
 
 const update = () => {
+
+    Snake.body.unshift([Snake.head_x, Snake.head_y]);
+
     Snake.head_x = Snake.head_x+direction_mapper[Snake.direction][0];
     Snake.head_y = Snake.head_y+direction_mapper[Snake.direction][1];
 
@@ -67,6 +82,23 @@ const update = () => {
         Snake.head_x = rows-1;
     if(Snake.head_y<0)
         Snake.head_y = cols-1;
+
+    Snake.body.forEach(bod => {
+        if(Snake.head_x==bod[0] && Snake.head_y==bod[1])
+        {
+            console.log("Lost!");
+            init();
+        }
+    });
+
+    if(Snake.head_x==Snake.food_x && Snake.head_y==Snake.food_y)
+    {
+        generateFood();
+    }
+    else 
+    {
+        Snake.body.pop();
+    }
 }
 
 const draw = () => {
@@ -79,27 +111,20 @@ const draw = () => {
             canvas.height
         );
 
-    canvasContext.fillStyle = col2;
-    canvasContext
-        .fillRect(
-            Snake.head_x*size,
-            Snake.head_y*size,
-            size,
-            size
-        )
+    drawPixel(col2, Snake.head_x,Snake.head_y);
 
-    canvasContext.fillStyle = col1;
     Snake
         .body
         .forEach(bod => {
-            canvasContext
-                .fillRect(
-                    bod[0]*size,
-                    bod[1]*size,
-                    size,
-                    size
-                );
-    });
+            drawPixel(col1, bod[0], bod[1]);
+        });
+
+    drawPixel(col3, Snake.food_x,Snake.food_y);
+}
+
+const drawPixel = (col, x, y) => {
+    canvasContext.fillStyle = col;
+    canvasContext.fillRect(x*size+1,y*size+1,size-1,size-1);
 }
 
 const keyHandler = (e) => {
