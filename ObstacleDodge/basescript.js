@@ -1,6 +1,12 @@
 var canvas = undefined;
 var canvasContext = undefined;
 
+class Player {
+    constructor() {
+        this.position = 0;
+    }
+}
+
 function start()
 {
 	canvas = document.getElementById("myCanvas");
