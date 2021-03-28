@@ -7,8 +7,10 @@ let width;
 let player;
 let obstacle;
 let isObs = 0;
+const obsNames = ['wall', 'cacti', 'bird', 'trench'];
 
-const obsVel = 5; 
+const obsVel = 20; 
+const gravity = 5;
 
 class Player {
 	constructor(base_x, base_y, w, h) {
@@ -16,12 +18,36 @@ class Player {
 		this.by = base_y;
 		this.w = w;
 		this.h = h;
+		this.v = 0;
 	}
 
 	draw() {
 		canvasContext.fillStyle = "cyan";
 		canvasContext.fillRect(this.bx-this.w/2, this.by-this.h, this.w, this.h);
 	}
+
+	move() {
+		if(this.v>0 && this.by+this.v>height-100){
+			this.v = 0;
+			this.by = height-100;
+		}
+		else {
+			this.by += this.v;
+			this.v += gravity;
+		}
+	}
+
+	miniJump() {
+		this.v = -25;
+	}
+
+	jump() {
+		this.v = -30;
+	}
+
+	superJump() {
+		this.v = -40;
+	} 
 }
 
 class Obstacle {
@@ -79,6 +105,7 @@ function start()
 	}
 
 	player = new Player(30, height-100, 40, 50);
+	player.miniJump();
 	mainLoop();
 }
 
@@ -94,13 +121,14 @@ function update()
 {
 	if(isObs==0)
 	{
-		obstacle = new Obstacle('bird');
+		obstacle = new Obstacle(obsNames[Math.floor(Math.random()*obsNames.length)]);
 		isObs = 1;
 	}
 	obstacle.x -= obsVel;
 	if((obstacle.x+obstacle.w/2)<0){
 		isObs = 0;
 	}
+	player.move();
 }
 
 function draw()
@@ -116,7 +144,7 @@ function mainLoop()
 {
 	update();
 	draw();
-	window.setTimeout(mainLoop, 1000/60);
+	window.setTimeout(mainLoop, 1000/35);
 }
 
 document.addEventListener('DOMContentLoaded', start);
