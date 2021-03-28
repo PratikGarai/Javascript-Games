@@ -6,19 +6,44 @@ let height;
 let width;
 let player;
 let obstacle;
+let env;
 let isObs = 0;
 const obsNames = ['wall', 'cacti', 'bird', 'trench'];
 
 const obsVel = 20; 
 const gravity = 5;
 
+class Environment {
+	constructor()
+	{
+		this.obstacle = undefined; 
+	}
+
+	update(){
+		if(isObs==0)
+		{
+			this.obstacle = new Obstacle(obsNames[Math.floor(Math.random()*obsNames.length)]);
+			isObs = 1;
+		}
+		this.obstacle.x -= obsVel;
+		if((this.obstacle.x+this.obstacle.w/2)<0){
+			isObs = 0;
+		}
+	}
+
+	draw(){
+		this.obstacle.draw();
+	}
+}
+
 class Player {
-	constructor(base_x, base_y, w, h) {
+	constructor(base_x, base_y, w, h, env) {
 		this.bx = base_x;
 		this.by = base_y;
 		this.w = w;
 		this.h = h;
 		this.v = 0;
+		this.env = env;
 	}
 
 	draw() {
@@ -27,6 +52,29 @@ class Player {
 	}
 
 	move() {
+		if(this.v==0)
+		{
+			switch(this.env.obstacle.type)
+			{
+				case 'wall':
+					if(this.env.obstacle.x>=this.bx+25 && this.env.obstacle.x<=this.bx+100)
+						this.superJump();
+					break;
+				case 'cacti':
+					if(this.env.obstacle.x>=this.bx+25 && this.env.obstacle.x<=this.bx+100)
+						this.jump();
+					break;
+				case 'trench':
+					if(this.env.obstacle.x>=this.bx+50 && this.env.obstacle.x<=this.bx+100)
+						this.miniJump();
+					break;
+				case 'bird':
+					if(this.env.obstacle.x>=this.bx+50 && this.env.obstacle.x<=this.bx+100 && this.h==50)
+						this.h -= 15;
+					if(this.env.obstacle.x<this.bx-25 && this.h!=50)
+						this.h += 15;
+			}
+		}
 		if(this.v>0 && this.by+this.v>height-100){
 			this.v = 0;
 			this.by = height-100;
@@ -58,6 +106,7 @@ class Obstacle {
 		this.w = d.w;
 		this.h = d.h;
 		this.color = d.color;
+		this.type = type;
 	}
 
 	draw() {
@@ -104,8 +153,8 @@ function start()
 		}
 	}
 
-	player = new Player(30, height-100, 40, 50);
-	player.miniJump();
+	env = new Environment();
+	player = new Player(30, height-100, 40, 50, env);
 	mainLoop();
 }
 
@@ -119,15 +168,7 @@ function drawGround () {
 
 function update()
 {
-	if(isObs==0)
-	{
-		obstacle = new Obstacle(obsNames[Math.floor(Math.random()*obsNames.length)]);
-		isObs = 1;
-	}
-	obstacle.x -= obsVel;
-	if((obstacle.x+obstacle.w/2)<0){
-		isObs = 0;
-	}
+	env.update();
 	player.move();
 }
 
@@ -137,14 +178,14 @@ function draw()
 	canvasContext.fillRect(0,0, width, height);
 	drawGround();
 	player.draw();
-	obstacle.draw();
+	env.draw();
 }
 
 function mainLoop()
 {
 	update();
 	draw();
-	window.setTimeout(mainLoop, 1000/35);
+	window.setTimeout(mainLoop, 1000/27);
 }
 
 document.addEventListener('DOMContentLoaded', start);
